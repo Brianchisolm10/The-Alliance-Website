@@ -1,0 +1,53 @@
+# AFYA Environment Variables for Cprice555
+# Copy this entire file and send it to Cprice555 via secure messaging
+# They should create a .env file in the root directory with this content
+
+# ============================================
+# DATABASE
+# ============================================
+DATABASE_URL="[YOUR_DATABASE_URL_HERE]"
+
+# ============================================
+# NEXTAUTH (Authentication)
+# ============================================
+NEXTAUTH_URL="http://localhost:3000"
+NEXTAUTH_SECRET="[YOUR_NEXTAUTH_SECRET_HERE]"
+
+# ============================================
+# EMAIL SERVICE (Resend)
+# ============================================
+EMAIL_FROM="noreply@theafya.org"
+RESEND_API_KEY="[YOUR_RESEND_API_KEY_HERE]"
+
+# ============================================
+# STRIPE (Payments)
+# ============================================
+NEXT_PUBLIC_STRIPE_PUBLIC_KEY="[YOUR_STRIPE_PUBLIC_KEY_HERE]"
+STRIPE_SECRET_KEY="[YOUR_STRIPE_SECRET_KEY_HERE]"
+STRIPE_WEBHOOK_SECRET="[YOUR_STRIPE_WEBHOOK_SECRET_HERE]"
+
+# ============================================
+# APPLICATION
+# ============================================
+NEXT_PUBLIC_APP_URL="http://localhost:3000"
+
+# ============================================
+# CALENDLY (Optional - for discovery calls)
+# ============================================
+NEXT_PUBLIC_CALENDLY_URL="https://calendly.com/afya-wellness/discovery-call"
+
+# ============================================
+# FILE STORAGE (Optional - if using Vercel Blob)
+# ============================================
+# BLOB_READ_WRITE_TOKEN="[YOUR_BLOB_TOKEN_HERE]"
+
+# ============================================
+# NOTES FOR CPRICE555
+# ============================================
+# 1. Create a file named .env in the root directory
+# 2. Copy all the content above into that file
+# 3. Make sure there are no extra spaces or quotes
+# 4. Run: npx prisma generate
+# 5. Run: npx prisma db push
+# 6. Run: npm run dev
+# 7. Visit: http://localhost:3000
