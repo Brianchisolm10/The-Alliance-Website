@@ -287,3 +287,161 @@ ${APP_URL}
     text,
   });
 }
+
+/**
+ * Send order status update email
+ */
+export async function sendOrderStatusEmail(
+  email: string,
+  customerName: string,
+  orderId: string,
+  status: string,
+  orderTotal: number,
+  orderItems: Array<{ name: string; quantity: number; price: number }>
+) {
+  const statusMessages: Record<string, { title: string; message: string; color: string }> = {
+    PROCESSING: {
+      title: 'Order Confirmed',
+      message: 'Your order has been confirmed and is being processed.',
+      color: '#2563eb',
+    },
+    SHIPPED: {
+      title: 'Order Shipped',
+      message: 'Your order has been shipped and is on its way to you!',
+      color: '#7c3aed',
+    },
+    DELIVERED: {
+      title: 'Order Delivered',
+      message: 'Your order has been delivered. We hope you enjoy your purchase!',
+      color: '#16a34a',
+    },
+    CANCELLED: {
+      title: 'Order Cancelled',
+      message: 'Your order has been cancelled. If you have questions, please contact support.',
+      color: '#dc2626',
+    },
+    REFUNDED: {
+      title: 'Order Refunded',
+      message: 'Your order has been refunded. The amount will be returned to your original payment method.',
+      color: '#6b7280',
+    },
+  };
+
+  const statusInfo = statusMessages[status] || {
+    title: 'Order Update',
+    message: `Your order status has been updated to ${status}.`,
+    color: '#2563eb',
+  };
+
+  const subject = `${statusInfo.title} - Order #${orderId.substring(0, 8)}`;
+
+  const itemsHtml = orderItems
+    .map(
+      (item) => `
+    <tr>
+      <td style="padding: 10px; border-bottom: 1px solid #e5e7eb;">${item.name}</td>
+      <td style="padding: 10px; border-bottom: 1px solid #e5e7eb; text-align: center;">${item.quantity}</td>
+      <td style="padding: 10px; border-bottom: 1px solid #e5e7eb; text-align: right;">$${(item.price / 100).toFixed(2)}</td>
+    </tr>
+  `
+    )
+    .join('');
+
+  const html = `
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>${subject}</title>
+      </head>
+      <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+        <div style="background-color: #f8f9fa; padding: 30px; border-radius: 10px;">
+          <h1 style="color: ${statusInfo.color}; margin-bottom: 20px;">${statusInfo.title}</h1>
+          
+          <p>Hi ${customerName},</p>
+          
+          <p>${statusInfo.message}</p>
+          
+          <div style="background-color: #fff; padding: 20px; border-radius: 8px; margin: 25px 0;">
+            <h2 style="color: #1e40af; margin-top: 0; font-size: 18px;">Order Details</h2>
+            <p style="color: #6b7280; font-size: 14px; margin-bottom: 15px;">Order ID: ${orderId}</p>
+            
+            <table style="width: 100%; border-collapse: collapse;">
+              <thead>
+                <tr style="background-color: #f3f4f6;">
+                  <th style="padding: 10px; text-align: left; border-bottom: 2px solid #e5e7eb;">Item</th>
+                  <th style="padding: 10px; text-align: center; border-bottom: 2px solid #e5e7eb;">Qty</th>
+                  <th style="padding: 10px; text-align: right; border-bottom: 2px solid #e5e7eb;">Price</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${itemsHtml}
+              </tbody>
+              <tfoot>
+                <tr>
+                  <td colspan="2" style="padding: 15px 10px 10px; text-align: right; font-weight: bold;">Total:</td>
+                  <td style="padding: 15px 10px 10px; text-align: right; font-weight: bold; font-size: 18px;">$${(orderTotal / 100).toFixed(2)}</td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+          
+          ${
+            status === 'DELIVERED'
+              ? `
+          <p style="margin-top: 30px;">Thank you for supporting AFYA! Your purchase helps us make wellness accessible to everyone.</p>
+          `
+              : ''
+          }
+          
+          <p style="margin-top: 20px;">If you have any questions about your order, please don't hesitate to contact us.</p>
+          
+          <p style="margin-top: 20px;">Best regards,<br>
+          <strong>The AFYA Team</strong></p>
+          
+          <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 30px 0;">
+          
+          <p style="font-size: 12px; color: #6b7280; text-align: center;">
+            This email was sent by AFYA Wellness<br>
+            <a href="${APP_URL}" style="color: #2563eb;">theafya.org</a>
+          </p>
+        </div>
+      </body>
+    </html>
+  `;
+
+  const itemsText = orderItems
+    .map((item) => `${item.name} x${item.quantity} - $${(item.price / 100).toFixed(2)}`)
+    .join('\n');
+
+  const text = `
+Hi ${customerName},
+
+${statusInfo.message}
+
+Order Details
+Order ID: ${orderId}
+
+Items:
+${itemsText}
+
+Total: $${(orderTotal / 100).toFixed(2)}
+
+${status === 'DELIVERED' ? 'Thank you for supporting AFYA! Your purchase helps us make wellness accessible to everyone.\n\n' : ''}If you have any questions about your order, please don't hesitate to contact us.
+
+Best regards,
+The AFYA Team
+
+---
+This email was sent by AFYA Wellness
+${APP_URL}
+  `.trim();
+
+  return sendEmail({
+    to: email,
+    subject,
+    html,
+    text,
+  });
+}

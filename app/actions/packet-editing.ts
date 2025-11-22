@@ -463,6 +463,18 @@ export async function publishPacket(packetId: string) {
       },
     });
 
+    // Generate PDF if not already generated
+    if (!existingPacket.fileUrl) {
+      try {
+        const { generateAndUploadPacketPDF } = await import('@/lib/pdf/storage');
+        await generateAndUploadPacketPDF(packetId);
+      } catch (pdfError) {
+        console.error('Error generating PDF on publish:', pdfError);
+        // Don't fail the publish operation if PDF generation fails
+        // PDF can be generated later
+      }
+    }
+
     // Send email notification to client
     try {
       const { sendPacketPublishedEmail } = await import('@/lib/email');
@@ -525,7 +537,7 @@ export async function unpublishPacket(packetId: string) {
 }
 
 /**
- * Get packet version history
+ * Get packet version history with user details
  */
 export async function getPacketVersionHistory(packetId: string) {
   try {
@@ -540,7 +552,22 @@ export async function getPacketVersionHistory(packetId: string) {
       orderBy: { version: 'desc' },
     });
 
-    return { success: true, data: versions };
+    // Fetch user details for each version
+    const userIds = [...new Set(versions.map(v => v.modifiedBy))];
+    const users = await prisma.user.findMany({
+      where: { id: { in: userIds } },
+      select: { id: true, name: true, email: true },
+    });
+
+    const userMap = new Map(users.map(u => [u.id, u]));
+
+    // Enrich versions with user details
+    const enrichedVersions = versions.map(version => ({
+      ...version,
+      modifiedByUser: userMap.get(version.modifiedBy) || null,
+    }));
+
+    return { success: true, data: enrichedVersions };
   } catch (error) {
     console.error('Error fetching version history:', error);
     return {

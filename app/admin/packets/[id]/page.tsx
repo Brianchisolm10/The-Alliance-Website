@@ -14,6 +14,7 @@ import {
   unpublishPacket,
   addCoachNotes,
 } from '@/app/actions/packet-editing';
+import { generatePacketPDF, regeneratePDF } from '@/app/actions/packet-storage';
 import { AnyPacketContent } from '@/lib/pdf/types';
 
 interface PacketData {
@@ -51,6 +52,7 @@ export default function PacketEditPage() {
   const [packet, setPacket] = useState<PacketData | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [generatingPDF, setGeneratingPDF] = useState(false);
   const [activeTab, setActiveTab] = useState<'edit' | 'history'>('edit');
   const [coachNotes, setCoachNotes] = useState('');
   const [showNotesEditor, setShowNotesEditor] = useState(false);
@@ -119,6 +121,40 @@ export default function PacketEditPage() {
       alert(result.error || 'Failed to save notes');
     }
     setSaving(false);
+  };
+
+  const handleGeneratePDF = async () => {
+    if (!confirm('Generate PDF for this packet? This may take a moment.')) {
+      return;
+    }
+
+    setGeneratingPDF(true);
+    const result = await generatePacketPDF(packetId);
+
+    if (result.success) {
+      alert('✓ PDF generated successfully!\n\nThe PDF is now available for download.');
+      loadPacket();
+    } else {
+      alert(`Failed to generate PDF: ${result.error}`);
+    }
+    setGeneratingPDF(false);
+  };
+
+  const handleRegeneratePDF = async () => {
+    if (!confirm('Regenerate PDF for this packet? This will replace the existing PDF.')) {
+      return;
+    }
+
+    setGeneratingPDF(true);
+    const result = await regeneratePDF(packetId);
+
+    if (result.success) {
+      alert('✓ PDF regenerated successfully!');
+      loadPacket();
+    } else {
+      alert(`Failed to regenerate PDF: ${result.error}`);
+    }
+    setGeneratingPDF(false);
   };
 
   const getStatusBadgeColor = (status: PacketStatus) => {
@@ -255,7 +291,7 @@ export default function PacketEditPage() {
       )}
 
       {/* Action Buttons */}
-      <div className="flex gap-3 mb-6">
+      <div className="flex gap-3 mb-6 flex-wrap">
         {packet.status === PacketStatus.PUBLISHED ? (
           <Button onClick={handleUnpublish} disabled={saving} variant="outline">
             {saving ? 'Unpublishing...' : 'Unpublish for Revisions'}
@@ -272,6 +308,40 @@ export default function PacketEditPage() {
         >
           {showNotesEditor ? 'Hide' : 'Add'} Coach Notes
         </Button>
+
+        {/* PDF Actions */}
+        <div className="flex gap-2 ml-auto">
+          {packet.fileUrl ? (
+            <>
+              <a
+                href={packet.fileUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <Button variant="outline" size="sm">
+                  📄 View PDF
+                </Button>
+              </a>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleRegeneratePDF}
+                disabled={generatingPDF}
+              >
+                {generatingPDF ? 'Regenerating...' : '🔄 Regenerate PDF'}
+              </Button>
+            </>
+          ) : (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleGeneratePDF}
+              disabled={generatingPDF}
+            >
+              {generatingPDF ? 'Generating...' : '📄 Generate PDF'}
+            </Button>
+          )}
+        </div>
       </div>
 
       {/* Coach Notes Editor */}

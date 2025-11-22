@@ -6,13 +6,14 @@ import { PacketStatus, PacketType } from '@prisma/client';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { getPacketsForReview } from '@/app/actions/packet-editing';
+import { getAllPacketsForAdmin, generatePacketPDF } from '@/app/actions/packet-storage';
 
 interface PacketWithUser {
   id: string;
   type: PacketType;
   status: PacketStatus;
   version: number;
+  fileUrl: string | null;
   createdAt: Date;
   updatedAt: Date;
   user: {
@@ -43,15 +44,29 @@ export default function PacketReviewPage() {
 
   const loadPackets = async () => {
     setLoading(true);
-    const result = await getPacketsForReview({
-      status: statusFilter,
-      type: typeFilter || undefined,
+    const result = await getAllPacketsForAdmin({
+      status: statusFilter.length > 0 ? statusFilter : undefined,
     });
 
-    if (result.success && result.data) {
-      setPackets(result.data as any);
+    if (result.success && result.packets) {
+      setPackets(result.packets as any);
     }
     setLoading(false);
+  };
+
+  const handleGeneratePDF = async (packetId: string) => {
+    if (!confirm('Generate PDF for this packet? This may take a moment.')) {
+      return;
+    }
+
+    const result = await generatePacketPDF(packetId);
+
+    if (result.success) {
+      alert('PDF generated successfully!');
+      loadPackets();
+    } else {
+      alert(`Failed to generate PDF: ${result.error}`);
+    }
   };
 
   const filteredPackets = packets.filter((packet) => {
@@ -260,6 +275,26 @@ export default function PacketReviewPage() {
                 </div>
 
                 <div className="flex gap-2 ml-4">
+                  {!packet.fileUrl && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => handleGeneratePDF(packet.id)}
+                    >
+                      Generate PDF
+                    </Button>
+                  )}
+                  {packet.fileUrl && (
+                    <Link
+                      href={packet.fileUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <Button size="sm" variant="outline">
+                        View PDF
+                      </Button>
+                    </Link>
+                  )}
                   <Link href={`/admin/packets/${packet.id}`}>
                     <Button size="sm">Review & Edit</Button>
                   </Link>

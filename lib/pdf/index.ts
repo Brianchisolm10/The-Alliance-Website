@@ -32,3 +32,11 @@ export {
   createDraftPacket,
   getPacketTypeForPopulation,
 } from './packet-generator';
+
+// Export packet storage functions
+export {
+  generateAndUploadPacketPDF,
+  regeneratePacketPDF,
+  deletePacketPDF,
+  getPacketDownloadUrl,
+} from './storage';

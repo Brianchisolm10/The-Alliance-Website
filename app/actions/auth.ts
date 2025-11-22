@@ -2,16 +2,17 @@
 
 import { signIn, signOut } from '@/lib/auth'
 import { AuthError } from 'next-auth'
-import { z } from 'zod'
 import { prisma } from '@/lib/db'
-
-// Login schema
-export const loginSchema = z.object({
-  email: z.string().email('Invalid email address'),
-  password: z.string().min(1, 'Password is required'),
-})
-
-export type LoginFormData = z.infer<typeof loginSchema>
+import {
+  loginSchema,
+  type LoginFormData,
+  resetRequestSchema,
+  type ResetRequestFormData,
+  resetPasswordSchema,
+  type ResetPasswordFormData,
+  setupAccountSchema,
+  type SetupAccountFormData,
+} from '@/lib/validations/auth'
 
 export async function login(data: LoginFormData) {
   try {
@@ -65,25 +66,6 @@ export async function login(data: LoginFormData) {
 export async function logout() {
   await signOut({ redirect: false })
 }
-
-// Password reset request schema
-export const resetRequestSchema = z.object({
-  email: z.string().email('Invalid email address'),
-})
-
-export type ResetRequestFormData = z.infer<typeof resetRequestSchema>
-
-// Password reset schema
-export const resetPasswordSchema = z.object({
-  token: z.string().min(1, 'Token is required'),
-  password: z.string().min(8, 'Password must be at least 8 characters'),
-  confirmPassword: z.string().min(1, 'Please confirm your password'),
-}).refine((data) => data.password === data.confirmPassword, {
-  message: "Passwords don't match",
-  path: ['confirmPassword'],
-})
-
-export type ResetPasswordFormData = z.infer<typeof resetPasswordSchema>
 
 export async function requestPasswordReset(data: ResetRequestFormData) {
   try {
@@ -201,19 +183,6 @@ export async function resetPassword(data: ResetPasswordFormData) {
     return { error: 'Something went wrong' }
   }
 }
-
-// Account setup schema
-export const setupAccountSchema = z.object({
-  token: z.string().min(1, 'Token is required'),
-  password: z.string().min(8, 'Password must be at least 8 characters'),
-  confirmPassword: z.string().min(1, 'Please confirm your password'),
-  name: z.string().min(1, 'Name is required'),
-}).refine((data) => data.password === data.confirmPassword, {
-  message: "Passwords don't match",
-  path: ['confirmPassword'],
-})
-
-export type SetupAccountFormData = z.infer<typeof setupAccountSchema>
 
 export async function setupAccount(data: SetupAccountFormData) {
   try {

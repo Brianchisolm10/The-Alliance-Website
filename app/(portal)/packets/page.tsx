@@ -1,9 +1,9 @@
 import { auth } from '@/lib/auth'
 import { redirect } from 'next/navigation'
-import { prisma } from '@/lib/db'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import Link from 'next/link'
 import { FileText, Download, Calendar, Eye } from 'lucide-react'
+import { getUserPublishedPackets } from '@/app/actions/packet-storage'
 
 const packetTypeLabels: Record<string, string> = {
   GENERAL: 'General Wellness',
@@ -12,6 +12,9 @@ const packetTypeLabels: Record<string, string> = {
   ATHLETE_PERFORMANCE: 'Athlete Performance',
   YOUTH: 'Youth',
   RECOVERY: 'Recovery',
+  PREGNANCY: 'Pregnancy Wellness',
+  POSTPARTUM: 'Postpartum Recovery',
+  OLDER_ADULT: 'Active Aging',
 }
 
 const packetTypeDescriptions: Record<string, string> = {
@@ -21,6 +24,9 @@ const packetTypeDescriptions: Record<string, string> = {
   ATHLETE_PERFORMANCE: 'Elite-level performance optimization strategies',
   YOUTH: 'Age-appropriate wellness and fitness guidance',
   RECOVERY: 'Injury recovery and rehabilitation protocols',
+  PREGNANCY: 'Safe and effective wellness during pregnancy',
+  POSTPARTUM: 'Recovery and strength rebuilding after childbirth',
+  OLDER_ADULT: 'Functional fitness and healthy aging strategies',
 }
 
 export default async function PacketsPage() {
@@ -30,19 +36,9 @@ export default async function PacketsPage() {
     redirect('/login')
   }
 
-  const packets = await prisma.packet.findMany({
-    where: { userId: session.user.id },
-    orderBy: { createdAt: 'desc' },
-    include: {
-      assessment: {
-        select: {
-          type: true,
-          completed: true,
-          createdAt: true,
-        },
-      },
-    },
-  })
+  // Get only PUBLISHED packets (client-side filtering)
+  const result = await getUserPublishedPackets()
+  const packets = result.success ? result.packets || [] : []
 
   return (
     <div className="space-y-8">
@@ -55,7 +51,7 @@ export default async function PacketsPage() {
 
       {packets.length > 0 ? (
         <div className="grid grid-cols-1 gap-6">
-          {packets.map((packet: any) => (
+          {packets.map((packet) => (
             <Card key={packet.id} className="overflow-hidden">
               <CardHeader className="bg-gradient-to-r from-blue-50 to-white">
                 <div className="flex items-start justify-between">
@@ -74,42 +70,46 @@ export default async function PacketsPage() {
                         <div className="flex items-center gap-1">
                           <Calendar className="h-4 w-4" />
                           <span>
-                            Created {new Date(packet.createdAt).toLocaleDateString('en-US', {
+                            Published {packet.publishedAt ? new Date(packet.publishedAt).toLocaleDateString('en-US', {
                               month: 'long',
                               day: 'numeric',
                               year: 'numeric',
-                            })}
+                            }) : 'Recently'}
                           </span>
                         </div>
-                        {packet.assessment && (
-                          <div className="flex items-center gap-1">
-                            <span className="text-xs px-2 py-1 rounded-full bg-green-100 text-green-800">
-                              Assessment Completed
-                            </span>
-                          </div>
-                        )}
+                        <div className="flex items-center gap-1">
+                          <span className="text-xs px-2 py-1 rounded-full bg-green-100 text-green-800">
+                            Published
+                          </span>
+                        </div>
                       </div>
                     </div>
                   </div>
-                  <div className="flex gap-2">
-                    <Link
-                      href={packet.fileUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-2 rounded-md bg-white border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
-                    >
-                      <Eye className="h-4 w-4" />
-                      Preview
-                    </Link>
-                    <Link
-                      href={packet.fileUrl}
-                      download
-                      className="inline-flex items-center gap-2 rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
-                    >
-                      <Download className="h-4 w-4" />
-                      Download
-                    </Link>
-                  </div>
+                  {packet.fileUrl && (
+                    <div className="flex gap-2">
+                      <Link
+                        href={packet.fileUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-2 rounded-md bg-white border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+                      >
+                        <Eye className="h-4 w-4" />
+                        Preview
+                      </Link>
+                      <Link
+                        href={`/api/packets/${packet.id}/download`}
+                        className="inline-flex items-center gap-2 rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+                      >
+                        <Download className="h-4 w-4" />
+                        Download
+                      </Link>
+                    </div>
+                  )}
+                  {!packet.fileUrl && (
+                    <div className="text-sm text-gray-500 italic">
+                      PDF being generated...
+                    </div>
+                  )}
                 </div>
               </CardHeader>
               <CardContent className="pt-6">
@@ -119,20 +119,20 @@ export default async function PacketsPage() {
                     <p className="mt-1 text-gray-600">{packetTypeLabels[packet.type]}</p>
                   </div>
                   <div>
-                    <p className="font-medium text-gray-900">Last Updated</p>
+                    <p className="font-medium text-gray-900">Published</p>
                     <p className="mt-1 text-gray-600">
-                      {new Date(packet.updatedAt).toLocaleDateString('en-US', {
+                      {packet.publishedAt ? new Date(packet.publishedAt).toLocaleDateString('en-US', {
                         month: 'short',
                         day: 'numeric',
                         year: 'numeric',
-                      })}
+                      }) : 'Recently'}
                     </p>
                   </div>
                   <div>
                     <p className="font-medium text-gray-900">Status</p>
                     <p className="mt-1">
                       <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                        Available
+                        Published
                       </span>
                     </p>
                   </div>
