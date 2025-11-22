@@ -1,0 +1,493 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// Enums
+enum UserRole {
+  USER
+  ADMIN
+  SUPER_ADMIN
+}
+
+enum UserStatus {
+  PENDING
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+}
+
+enum AssessmentType {
+  GENERAL
+  NUTRITION
+  TRAINING
+  PERFORMANCE
+  YOUTH
+  RECOVERY
+  LIFESTYLE
+}
+
+enum PacketType {
+  GENERAL
+  NUTRITION
+  TRAINING
+  ATHLETE_PERFORMANCE
+  YOUTH
+  RECOVERY
+  PREGNANCY
+  POSTPARTUM
+  OLDER_ADULT
+}
+
+enum Population {
+  GENERAL
+  ATHLETE
+  YOUTH
+  RECOVERY
+  PREGNANCY
+  POSTPARTUM
+  OLDER_ADULT
+  CHRONIC_CONDITION
+}
+
+enum PacketStatus {
+  DRAFT
+  UNPUBLISHED
+  PUBLISHED
+  ARCHIVED
+}
+
+enum DiscoveryStatus {
+  SUBMITTED
+  CALL_SCHEDULED
+  CALL_COMPLETED
+  CONVERTED
+  CLOSED
+}
+
+enum OrderStatus {
+  PENDING
+  PROCESSING
+  SHIPPED
+  DELIVERED
+  CANCELLED
+  REFUNDED
+}
+
+enum GearDriveStatus {
+  SUBMITTED
+  REVIEWED
+  SCHEDULED
+  COMPLETED
+  DECLINED
+}
+
+enum ProgramType {
+  FITNESS
+  NUTRITION
+  WELLNESS
+  YOUTH
+  RECOVERY
+}
+
+enum IntensityLevel {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+  ELITE
+}
+
+// Models
+model User {
+  id               String      @id @default(cuid())
+  email            String      @unique
+  name             String?
+  password         String?
+  role             UserRole    @default(USER)
+  status           UserStatus  @default(PENDING)
+  population       Population?
+  setupToken       String?     @unique
+  setupTokenExpiry DateTime?
+  resetToken       String?     @unique
+  resetTokenExpiry DateTime?
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+  lastLoginAt      DateTime?
+
+  // Relations
+  assessments       Assessment[]
+  packets           Packet[]
+  orders            Order[]
+  clientNotes       ClientNote[]       @relation("ClientNotes")
+  authoredNotes     ClientNote[]       @relation("AuthoredNotes")
+  activityLogs      ActivityLog[]
+  savedToolResults  SavedToolResult[]
+  assignedClients   ClientAssignment[] @relation("AssignedTo")
+  clientAssignments ClientAssignment[] @relation("Client")
+  modifiedPackets   Packet[]           @relation("PacketModifier")
+  publishedPackets  Packet[]           @relation("PacketPublisher")
+
+  @@index([email])
+  @@index([status])
+  @@index([role])
+  @@index([population])
+}
+
+model DiscoverySubmission {
+  id            String          @id @default(cuid())
+  name          String
+  email         String
+  goal          String          @db.Text
+  notes         String?         @db.Text
+  status        DiscoveryStatus @default(SUBMITTED)
+  callScheduled Boolean         @default(false)
+  callDate      DateTime?
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+
+  @@index([email])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model Assessment {
+  id        String         @id @default(cuid())
+  userId    String
+  type      AssessmentType
+  data      Json
+  completed Boolean        @default(false)
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+
+  // Relations
+  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  packets Packet[]
+
+  @@unique([userId, type])
+  @@index([userId])
+  @@index([type])
+  @@index([completed])
+}
+
+model Packet {
+  id             String       @id @default(cuid())
+  userId         String
+  assessmentId   String?
+  type           PacketType
+  fileUrl        String?
+  data           Json?
+  status         PacketStatus @default(DRAFT)
+  version        Int          @default(1)
+  lastModifiedBy String?
+  publishedAt    DateTime?
+  publishedBy    String?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  // Relations
+  user       User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  assessment Assessment?     @relation(fields: [assessmentId], references: [id], onDelete: SetNull)
+  modifier   User?           @relation("PacketModifier", fields: [lastModifiedBy], references: [id], onDelete: SetNull)
+  publisher  User?           @relation("PacketPublisher", fields: [publishedBy], references: [id], onDelete: SetNull)
+  versions   PacketVersion[]
+
+  @@index([userId])
+  @@index([type])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model Program {
+  id          String         @id @default(cuid())
+  name        String
+  description String         @db.Text
+  type        ProgramType
+  intensity   IntensityLevel
+  duration    String
+  imageUrl    String?
+  published   Boolean        @default(false)
+  featured    Boolean        @default(false)
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  @@index([published])
+  @@index([featured])
+  @@index([type])
+}
+
+model Product {
+  id              String   @id @default(cuid())
+  name            String
+  description     String   @db.Text
+  price           Int // Price in cents
+  imageUrl        String?
+  inventory       Int      @default(0)
+  stripeProductId String?  @unique
+  stripePriceId   String?  @unique
+  published       Boolean  @default(false)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  orderItems OrderItem[]
+
+  @@index([published])
+}
+
+model Order {
+  id              String      @id @default(cuid())
+  userId          String?
+  email           String
+  status          OrderStatus @default(PENDING)
+  total           Int // Total in cents
+  stripePaymentId String?     @unique
+  donationAmount  Int? // Donation in cents
+  donationArea    String?
+  shippingAddress Json?
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  // Relations
+  user       User?       @relation(fields: [userId], references: [id], onDelete: SetNull)
+  orderItems OrderItem[]
+
+  @@index([userId])
+  @@index([email])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model OrderItem {
+  id        String   @id @default(cuid())
+  orderId   String
+  productId String
+  quantity  Int
+  price     Int // Price at time of purchase in cents
+  createdAt DateTime @default(now())
+
+  // Relations
+  order   Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id], onDelete: Restrict)
+
+  @@index([orderId])
+  @@index([productId])
+}
+
+model Donation {
+  id              String   @id @default(cuid())
+  email           String
+  amount          Int // Amount in cents
+  allocation      Json // JSON object with impact area allocations
+  stripePaymentId String?  @unique
+  receiptSent     Boolean  @default(false)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([email])
+  @@index([createdAt])
+}
+
+model GearDrive {
+  id         String          @id @default(cuid())
+  name       String
+  email      String
+  items      Json // Array of items with details
+  condition  String
+  preference String // Pickup or dropoff
+  status     GearDriveStatus @default(SUBMITTED)
+  notes      String?         @db.Text
+  createdAt  DateTime        @default(now())
+  updatedAt  DateTime        @updatedAt
+
+  @@index([email])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model ClientNote {
+  id        String   @id @default(cuid())
+  clientId  String
+  authorId  String
+  content   String   @db.Text
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  client User @relation("ClientNotes", fields: [clientId], references: [id], onDelete: Cascade)
+  author User @relation("AuthoredNotes", fields: [authorId], references: [id], onDelete: Cascade)
+
+  @@index([clientId])
+  @@index([authorId])
+  @@index([createdAt])
+}
+
+model ClientAssignment {
+  id           String   @id @default(cuid())
+  clientId     String
+  assignedToId String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Relations
+  client     User @relation("Client", fields: [clientId], references: [id], onDelete: Cascade)
+  assignedTo User @relation("AssignedTo", fields: [assignedToId], references: [id], onDelete: Cascade)
+
+  @@unique([clientId, assignedToId])
+  @@index([clientId])
+  @@index([assignedToId])
+}
+
+model ActivityLog {
+  id        String   @id @default(cuid())
+  userId    String?
+  action    String
+  resource  String
+  details   Json?
+  ipAddress String?
+  createdAt DateTime @default(now())
+
+  // Relations
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([action])
+  @@index([resource])
+  @@index([createdAt])
+}
+
+model SavedToolResult {
+  id        String   @id @default(cuid())
+  userId    String
+  toolName  String
+  data      Json
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([toolName])
+  @@index([createdAt])
+}
+
+model Testimonial {
+  id        String   @id @default(cuid())
+  name      String
+  content   String   @db.Text
+  imageUrl  String?
+  published Boolean  @default(false)
+  featured  Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([published])
+  @@index([featured])
+}
+
+model ImpactArea {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  description String   @db.Text
+  metrics     Json?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([name])
+}
+
+model ContactSubmission {
+  id        String   @id @default(cuid())
+  name      String
+  email     String
+  subject   String
+  message   String   @db.Text
+  createdAt DateTime @default(now())
+
+  @@index([email])
+  @@index([createdAt])
+}
+
+model PacketVersion {
+  id         String   @id @default(cuid())
+  packetId   String
+  version    Int
+  data       Json
+  fileUrl    String?
+  modifiedBy String
+  createdAt  DateTime @default(now())
+
+  // Relations
+  packet Packet @relation(fields: [packetId], references: [id], onDelete: Cascade)
+
+  @@unique([packetId, version])
+  @@index([packetId])
+  @@index([createdAt])
+}
+
+model ExerciseLibrary {
+  id                String       @id @default(cuid())
+  name              String
+  description       String       @db.Text
+  category          String
+  targetMuscles     String[]
+  equipment         String[]
+  difficulty        String
+  videoUrl          String?
+  imageUrl          String?
+  instructions      String       @db.Text
+  regressions       Json? // Array of exercise IDs or descriptions
+  progressions      Json? // Array of exercise IDs or descriptions
+  contraindications Json? // Population-specific safety rules
+  populations       Population[]
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+
+  @@index([category])
+  @@index([difficulty])
+  @@index([name])
+}
+
+model NutritionLibrary {
+  id                String       @id @default(cuid())
+  name              String
+  description       String       @db.Text
+  category          String // Meal type, food group, etc.
+  macros            Json // Protein, carbs, fats, calories
+  micronutrients    Json? // Vitamins, minerals
+  allergens         String[]
+  dietaryTags       String[] // Vegan, gluten-free, etc.
+  servingSize       String
+  populations       Population[]
+  contraindications Json? // Population-specific restrictions
+  alternatives      Json? // Alternative foods for restrictions
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+
+  @@index([category])
+  @@index([name])
+}
+
+model PopulationModule {
+  id         String     @id @default(cuid())
+  name       String
+  population Population
+  moduleType String // Assessment, exercise, nutrition, etc.
+  config     Json // Module-specific configuration
+  questions  Json? // Assessment questions if applicable
+  rules      Json? // Population-specific rules and constraints
+  active     Boolean    @default(true)
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+
+  @@unique([population, moduleType, name])
+  @@index([population])
+  @@index([moduleType])
+  @@index([active])
+}
