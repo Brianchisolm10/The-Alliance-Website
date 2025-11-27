@@ -23,7 +23,7 @@ export function PartnershipsSection() {
               <div>
                 <h3 className="text-xl font-semibold text-gray-900 mb-2">University Partnerships</h3>
                 <p className="text-gray-600 mb-4">
-                  Integrate AFYA's wellness programs into your campus health initiatives. 
+                  Integrate AFYA&apos;s wellness programs into your campus health initiatives. 
                   We provide customized solutions for student wellness, athletic programs, and health education.
                 </p>
                 <ul className="space-y-2 text-sm text-gray-600">
@@ -170,7 +170,7 @@ export function PartnershipsSection() {
       <div>
         <h2 className="text-3xl font-bold text-gray-900 mb-6">Current Partnerships</h2>
         <p className="text-lg text-gray-600 mb-8">
-          We're proud to collaborate with leading institutions to expand access to quality wellness education.
+          We&apos;re proud to collaborate with leading institutions to expand access to quality wellness education.
         </p>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

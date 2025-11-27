@@ -69,7 +69,7 @@ export default async function AssessmentsPage() {
     redirect('/login')
   }
 
-  // If user doesn't have a population assigned, show message
+  // If user doesn&apos;t have a population assigned, show message
   if (!user.population) {
     return (
       <div className="mx-auto max-w-7xl">

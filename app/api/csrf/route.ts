@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server'
 import { setCsrfToken } from '@/lib/security/csrf'
 
+export const dynamic = 'force-dynamic'
+
 export async function GET() {
   try {
     const token = await setCsrfToken()

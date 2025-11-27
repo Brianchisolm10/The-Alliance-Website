@@ -31,7 +31,7 @@ export async function ProductsGrid() {
           Shop Coming Soon
         </h3>
         <p className="text-gray-600 mb-4">
-          We're setting up our shop. Check back soon for amazing wellness products!
+          We&apos;re setting up our shop. Check back soon for amazing wellness products!
         </p>
         <Link href="/">
           <Button variant="outline" className="mt-4">
@@ -59,7 +59,7 @@ export async function ProductsGrid() {
           No Products Available
         </h3>
         <p className="text-gray-600 mb-4">
-          We're currently updating our inventory. Check back soon for new items!
+          We&apos;re currently updating our inventory. Check back soon for new items!
         </p>
         <Link href="/">
           <Button variant="outline" className="mt-4">

@@ -40,8 +40,8 @@ export default function GlobalError({
                 Something went wrong
               </h2>
               <p className="text-gray-600 mb-6">
-                We're sorry, but something unexpected happened. Our team has been
-                notified and we're working to fix the issue.
+                We&apos;re sorry, but something unexpected happened. Our team has been
+                notified and we&apos;re working to fix the issue.
               </p>
               <div className="flex gap-4 justify-center">
                 <button

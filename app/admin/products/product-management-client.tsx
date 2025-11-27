@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import Image from 'next/image'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card } from '@/components/ui/card'
@@ -117,11 +118,15 @@ export function ProductManagementClient() {
           {filteredProducts.map((product) => (
             <Card key={product.id} className="p-6">
               {product.imageUrl && (
-                <img
-                  src={product.imageUrl}
-                  alt={product.name}
-                  className="w-full h-48 object-cover rounded-lg mb-4"
-                />
+                <div className="relative w-full h-48 rounded-lg mb-4 overflow-hidden">
+                  <Image
+                    src={product.imageUrl}
+                    alt={product.name}
+                    fill
+                    className="object-cover"
+                    sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                  />
+                </div>
               )}
               <div className="space-y-3">
                 <div>

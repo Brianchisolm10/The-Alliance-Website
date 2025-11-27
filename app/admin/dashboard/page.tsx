@@ -7,7 +7,7 @@ import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { getAdminDashboardData, getSystemHealth, getNotifications } from '@/app/actions/admin-dashboard'
 
-// Lazy load NotificationsCenter as it's below the fold
+// Lazy load NotificationsCenter as it&apos;s below the fold
 const NotificationsCenter = dynamic(() => import('@/components/admin/notifications-center').then(mod => ({ default: mod.NotificationsCenter })), {
   loading: () => <Card className="p-6 min-h-[200px] animate-pulse bg-gray-100" />,
 })
@@ -135,7 +135,7 @@ export default function AdminDashboardPage() {
       <div>
         <h1 className="text-3xl font-bold text-gray-900">Admin Dashboard</h1>
         <p className="text-gray-600 mt-1">
-          Welcome back! Here's what's happening with your platform.
+          Welcome back! Here&apos;s what&apos;s happening with your platform.
         </p>
       </div>
 

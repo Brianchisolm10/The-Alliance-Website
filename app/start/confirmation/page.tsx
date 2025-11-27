@@ -142,7 +142,7 @@ export default async function ConfirmationPage({ searchParams }: ConfirmationPag
                   />
                 </svg>
                 <span>
-                  During the call, we'll discuss your goals and create a personalized wellness plan
+                  During the call, we&apos;ll discuss your goals and create a personalized wellness plan
                 </span>
               </li>
             </ul>

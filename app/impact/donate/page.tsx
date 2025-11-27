@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { PublicLayout } from '@/components/layouts/public-layout';
 import { Button } from '@/components/ui/button';
@@ -19,7 +19,7 @@ const IMPACT_AREAS = [
   { id: 'general', name: 'Where Needed Most', icon: Users },
 ];
 
-export default function DonatePage() {
+function DonatePageContent() {
   const searchParams = useSearchParams();
   const preselectedArea = searchParams.get('area');
 
@@ -123,10 +123,9 @@ export default function DonatePage() {
   };
 
   return (
-    <PublicLayout>
-      <div className="bg-gray-50 min-h-screen">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="text-center mb-8">
+    <div className="bg-gray-50 min-h-screen">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">
             Make a Donation
           </h1>
@@ -317,8 +316,17 @@ export default function DonatePage() {
             Your donation is tax-deductible.
           </p>
         </form>
-        </div>
       </div>
+    </div>
+  );
+}
+
+export default function DonatePage() {
+  return (
+    <PublicLayout>
+      <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><LoadingSpinner /></div>}>
+        <DonatePageContent />
+      </Suspense>
     </PublicLayout>
   );
 }

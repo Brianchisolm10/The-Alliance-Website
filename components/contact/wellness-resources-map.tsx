@@ -1,3 +1,4 @@
+/* eslint-disable react/no-unescaped-entities */
 'use client'
 
 import { useState, useEffect } from 'react'
@@ -187,7 +188,7 @@ export function WellnessResourcesMap() {
               </svg>
               <p className="text-lg font-medium text-gray-700">Enable Location to See Map</p>
               <p className="text-sm text-gray-500 mt-1">
-                Click "Use My Precise Location" to find resources near you
+                Click &quot;Use My Precise Location&quot; to find resources near you
               </p>
             </div>
           )}

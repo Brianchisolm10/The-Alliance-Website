@@ -3,6 +3,8 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useCart } from '@/lib/cart/cart-context';
+
+export const dynamic = 'force-dynamic';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -88,7 +90,7 @@ export default function CheckoutPage() {
                     className="mt-1"
                   />
                   <p className="text-sm text-gray-600 mt-1">
-                    We'll send your order confirmation to this email
+                    We&apos;ll send your order confirmation to this email
                   </p>
                 </div>
               </Card>
@@ -99,7 +101,7 @@ export default function CheckoutPage() {
                   Support Our Mission (Optional)
                 </h2>
                 <p className="text-gray-600 mb-4">
-                  Add a donation to support AFYA's mission to make wellness accessible to all.
+                  Add a donation to support AFYA&apos;s mission to make wellness accessible to all.
                 </p>
                 <DonationAllocation
                   onDonationChange={(amount, area) => {

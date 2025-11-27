@@ -322,7 +322,7 @@ export default function ToolsPage() {
             <BookOpen className="h-12 w-12 text-blue-600 mx-auto mb-4" />
             <h2 className="text-2xl font-bold text-gray-900 mb-2">More Tools Coming Soon</h2>
             <p className="text-gray-600 max-w-2xl mx-auto">
-              We're continuously expanding our resource hub with new calculators, assessments, 
+              We&apos;re continuously expanding our resource hub with new calculators, assessments, 
               educational content, and curated resources. Check back regularly for updates!
             </p>
           </section>

@@ -181,7 +181,7 @@ export function OrderConfirmation() {
           <p className="text-blue-800">
             Your generous donation of ${(order.donationAmount / 100).toFixed(2)}
             {order.donationArea && ` to ${order.donationArea}`} helps us make wellness
-            accessible to underserved communities. You'll receive a tax receipt via email.
+            accessible to underserved communities. You&apos;ll receive a tax receipt via email.
           </p>
         </Card>
       )}
@@ -189,16 +189,16 @@ export function OrderConfirmation() {
       {/* Next Steps */}
       <Card className="p-6">
         <h2 className="text-xl font-semibold text-gray-900 mb-4">
-          What's Next?
+          What&apos;s Next?
         </h2>
         <ul className="space-y-3 text-gray-600">
           <li className="flex items-start gap-3">
             <CheckCircle className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
-            <span>You'll receive an order confirmation email shortly</span>
+            <span>You&apos;ll receive an order confirmation email shortly</span>
           </li>
           <li className="flex items-start gap-3">
             <CheckCircle className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
-            <span>We'll send you tracking information once your order ships</span>
+            <span>We&apos;ll send you tracking information once your order ships</span>
           </li>
           <li className="flex items-start gap-3">
             <CheckCircle className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
