@@ -3,6 +3,7 @@
 import { prisma } from '@/lib/db'
 import { auth } from '@/lib/auth'
 import { UserRole, UserStatus } from '@prisma/client'
+import { logAdminAction, LogResource } from '@/lib/logging'
 
 export async function getUsers(params?: {
   search?: string
@@ -222,17 +223,10 @@ export async function createUser(data: {
     }
 
     // Log activity
-    await prisma.activityLog.create({
-      data: {
-        userId: session.user.id,
-        action: 'CREATE_USER',
-        resource: 'USER',
-        details: {
-          createdUserId: user.id,
-          email: user.email,
-          role: user.role,
-        },
-      },
+    await logAdminAction('USER_CREATED', session.user.id, LogResource.USER, {
+      createdUserId: user.id,
+      email: user.email,
+      role: user.role,
     })
 
     return {
@@ -317,16 +311,9 @@ export async function updateUser(
     })
 
     // Log activity
-    await prisma.activityLog.create({
-      data: {
-        userId: session.user.id,
-        action: 'UPDATE_USER',
-        resource: 'USER',
-        details: {
-          updatedUserId: userId,
-          changes: updateData,
-        },
-      },
+    await logAdminAction('USER_UPDATED', session.user.id, LogResource.USER, {
+      updatedUserId: userId,
+      changes: updateData,
     })
 
     return {

@@ -4,9 +4,10 @@ import Image from 'next/image'
 import { PublicLayout } from '@/components/layouts/public-layout'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
-import { programQueries } from '@/lib/db/queries'
+import { cachedProgramQueries } from '@/lib/db/cached-queries'
 
-export const dynamic = 'force-dynamic'
+// Revalidate this page every 5 minutes
+export const revalidate = 300
 
 interface ProgramDetailPageProps {
   params: {
@@ -33,7 +34,7 @@ export default async function ProgramDetailPage({ params }: ProgramDetailPagePro
   let program
   
   try {
-    program = await programQueries.findById(params.id)
+    program = await cachedProgramQueries.findById(params.id)
   } catch (error) {
     console.error('Error fetching program:', error)
     notFound()
@@ -81,7 +82,9 @@ export default async function ProgramDetailPage({ params }: ProgramDetailPagePro
                       alt={program.name}
                       fill
                       className="object-cover"
+                      sizes="(max-width: 1024px) 100vw, 50vw"
                       priority
+                      quality={90}
                     />
                   </div>
                 ) : (

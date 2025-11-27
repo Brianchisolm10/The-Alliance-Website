@@ -5,7 +5,7 @@ export const Footer: React.FC = () => {
   const currentYear = new Date().getFullYear()
 
   return (
-    <footer className="bg-gray-900 text-white">
+    <footer className="bg-gray-900 text-white" role="contentinfo">
       <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 gap-8 md:grid-cols-4">
           {/* Brand */}
@@ -17,7 +17,7 @@ export const Footer: React.FC = () => {
           </div>
 
           {/* Quick Links */}
-          <div>
+          <nav aria-label="Quick links">
             <h4 className="text-sm font-semibold uppercase tracking-wider">Quick Links</h4>
             <ul className="mt-4 space-y-2">
               <li>
@@ -41,10 +41,10 @@ export const Footer: React.FC = () => {
                 </Link>
               </li>
             </ul>
-          </div>
+          </nav>
 
           {/* Get Involved */}
-          <div>
+          <nav aria-label="Get involved">
             <h4 className="text-sm font-semibold uppercase tracking-wider">Get Involved</h4>
             <ul className="mt-4 space-y-2">
               <li>
@@ -68,7 +68,7 @@ export const Footer: React.FC = () => {
                 </Link>
               </li>
             </ul>
-          </div>
+          </nav>
 
           {/* Contact & Social */}
           <div>
@@ -83,13 +83,13 @@ export const Footer: React.FC = () => {
                 </a>
               </li>
             </ul>
-            <div className="mt-4 flex space-x-4">
+            <div className="mt-4 flex space-x-4" role="list" aria-label="Social media links">
               <a
                 href="https://instagram.com/the.afya"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-gray-400 hover:text-white"
-                aria-label="Instagram"
+                className="text-gray-400 hover:text-white transition-colors focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 focus:ring-offset-gray-900 rounded"
+                aria-label="Follow us on Instagram"
               >
                 <svg className="h-6 w-6" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                   <path
@@ -103,8 +103,8 @@ export const Footer: React.FC = () => {
                 href="https://tiktok.com/@theafya"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-gray-400 hover:text-white"
-                aria-label="TikTok"
+                className="text-gray-400 hover:text-white transition-colors focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 focus:ring-offset-gray-900 rounded"
+                aria-label="Follow us on TikTok"
               >
                 <svg className="h-6 w-6" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                   <path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-5.2 1.74 2.89 2.89 0 012.31-4.64 2.93 2.93 0 01.88.13V9.4a6.84 6.84 0 00-1-.05A6.33 6.33 0 005 20.1a6.34 6.34 0 0010.86-4.43v-7a8.16 8.16 0 004.77 1.52v-3.4a4.85 4.85 0 01-1-.1z" />

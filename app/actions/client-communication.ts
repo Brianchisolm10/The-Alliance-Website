@@ -156,7 +156,11 @@ export async function getClientById(clientId: string) {
         },
         clientNotes: {
           orderBy: { createdAt: 'desc' },
-          include: {
+          select: {
+            id: true,
+            content: true,
+            createdAt: true,
+            updatedAt: true,
             author: {
               select: {
                 id: true,

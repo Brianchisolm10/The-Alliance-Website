@@ -132,7 +132,7 @@ export default function ClientsPage() {
     }
 
     let color = 'bg-gray-100 text-gray-800'
-    let text = discovery.status
+    let text: string = discovery.status
 
     switch (discovery.status) {
       case 'SUBMITTED':

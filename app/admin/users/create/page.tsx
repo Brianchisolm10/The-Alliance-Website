@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input'
 import { Select } from '@/components/ui/select'
 import { Label } from '@/components/ui/label'
 import { createUser } from '@/app/actions/user-management'
-import { UserRole, Population } from '@prisma/client'
+import { UserRole } from '@prisma/client'
 
 export default function CreateUserPage() {
   const router = useRouter()

@@ -10,11 +10,13 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import Link from 'next/link'
+import { Eye, EyeOff } from 'lucide-react'
 
 export function LoginForm() {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [showPassword, setShowPassword] = useState(false)
 
   const {
     register,
@@ -29,16 +31,20 @@ export function LoginForm() {
     setError(null)
 
     try {
+      console.log('Attempting login with:', { email: data.email })
       const result = await login(data)
+      console.log('Login result:', result)
 
       if (result.error) {
         setError(result.error)
       } else if (result.success) {
+        // Redirect based on user role (will be handled by middleware)
         router.push('/dashboard')
         router.refresh()
       }
-    } catch {
-      setError('An unexpected error occurred')
+    } catch (err) {
+      console.error('Login error:', err)
+      setError('An unexpected error occurred. Please try again.')
     } finally {
       setIsLoading(false)
     }
@@ -75,14 +81,31 @@ export function LoginForm() {
             Forgot password?
           </Link>
         </div>
-        <Input
-          id="password"
-          type="password"
-          placeholder="••••••••"
-          error={!!errors.password}
-          {...register('password')}
-          disabled={isLoading}
-        />
+        <div className="relative">
+          <Input
+            id="password"
+            type={showPassword ? 'text' : 'password'}
+            placeholder="••••••••"
+            error={!!errors.password}
+            {...register('password')}
+            disabled={isLoading}
+            className="pr-10"
+          />
+          <button
+            type="button"
+            onClick={() => setShowPassword(!showPassword)}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 rounded p-1 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            aria-label={showPassword ? 'Hide password' : 'Show password'}
+            tabIndex={0}
+            disabled={isLoading}
+          >
+            {showPassword ? (
+              <EyeOff className="h-5 w-5" aria-hidden="true" />
+            ) : (
+              <Eye className="h-5 w-5" aria-hidden="true" />
+            )}
+          </button>
+        </div>
         {errors.password && <p className="text-sm text-red-600">{errors.password.message}</p>}
       </div>
 

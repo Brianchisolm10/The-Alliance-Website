@@ -37,6 +37,9 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${inter.variable} ${poppins.variable}`}>
       <body className="font-sans antialiased">
+        <a href="#main-content" className="skip-to-main">
+          Skip to main content
+        </a>
         <CartProvider>{children}</CartProvider>
       </body>
     </html>

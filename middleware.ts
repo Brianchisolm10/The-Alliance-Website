@@ -25,7 +25,8 @@ export async function middleware(req: NextRequest) {
     pathname === '/login' ||
     pathname.startsWith('/setup') ||
     pathname.startsWith('/reset-password') ||
-    pathname.startsWith('/api/auth')
+    pathname.startsWith('/api/auth') ||
+    pathname.startsWith('/api/csrf')
 
   // Protected admin routes
   const isAdminRoute = pathname.startsWith('/admin')
@@ -50,7 +51,16 @@ export async function middleware(req: NextRequest) {
     }
   }
 
-  return NextResponse.next()
+  // Create response
+  const response = NextResponse.next()
+
+  // Add security headers to response
+  response.headers.set('X-Content-Type-Options', 'nosniff')
+  response.headers.set('X-Frame-Options', 'SAMEORIGIN')
+  response.headers.set('X-XSS-Protection', '1; mode=block')
+  response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin')
+
+  return response
 }
 
 export const config = {

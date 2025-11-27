@@ -24,7 +24,7 @@ export default async function ProgramManagementPage() {
 
       <Suspense fallback={<LoadingSpinner />}>
         <ProgramManagementClient 
-          initialPrograms={result.success ? result.programs : []} 
+          initialPrograms={result.success && result.programs ? result.programs : []} 
         />
       </Suspense>
     </div>

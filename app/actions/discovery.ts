@@ -9,6 +9,7 @@ import {
   updateDiscoveryStatusSchema,
   type UpdateDiscoveryStatusData,
 } from '@/lib/validations/discovery'
+import { logFormSubmission } from '@/lib/logging'
 
 export async function submitDiscoveryForm(data: DiscoveryFormData) {
   try {
@@ -36,17 +37,25 @@ export async function submitDiscoveryForm(data: DiscoveryFormData) {
     })
 
     // Log activity
-    await prisma.activityLog.create({
-      data: {
-        action: 'DISCOVERY_FORM_SUBMIT',
-        resource: 'DISCOVERY',
-        details: { 
-          submissionId: submission.id,
-          email: email.toLowerCase(),
-          name,
-        },
-      },
+    await logFormSubmission('DISCOVERY_FORM_SUBMIT', null, { 
+      submissionId: submission.id,
+      email: email.toLowerCase(),
+      name,
     })
+
+    // Send confirmation email
+    const { sendDiscoveryConfirmationEmail } = await import('@/lib/email')
+    const schedulingUrl = process.env.NEXT_PUBLIC_CALENDLY_URL
+    const emailResult = await sendDiscoveryConfirmationEmail(
+      email.toLowerCase(),
+      name,
+      schedulingUrl
+    )
+
+    if (!emailResult.success) {
+      console.error('Failed to send discovery confirmation email:', emailResult.error)
+      // Don't fail the submission if email fails
+    }
 
     return { 
       success: true,

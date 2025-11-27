@@ -172,7 +172,7 @@ export async function createProduct(data: z.infer<typeof productSchema>) {
   } catch (error) {
     console.error('Error creating product:', error)
     if (error instanceof z.ZodError) {
-      return { success: false, error: error.errors[0].message }
+      return { success: false, error: error.issues[0].message }
     }
     return { success: false, error: 'Failed to create product' }
   }
@@ -206,6 +206,9 @@ export async function updateProduct(
     // Validate data
     const validatedData = productSchema.partial().parse(data)
 
+    let stripeProductId = existingProduct.stripeProductId
+    let stripePriceId = existingProduct.stripePriceId
+
     // Update Stripe product if needed
     if (validatedData.published && !existingProduct.stripeProductId) {
       // Create Stripe product
@@ -221,8 +224,8 @@ export async function updateProduct(
         currency: 'usd',
       })
 
-      validatedData.stripeProductId = stripeProduct.id
-      validatedData.stripePriceId = stripePrice.id
+      stripeProductId = stripeProduct.id
+      stripePriceId = stripePrice.id
     } else if (existingProduct.stripeProductId) {
       // Update existing Stripe product
       await stripe.products.update(existingProduct.stripeProductId, {
@@ -239,14 +242,18 @@ export async function updateProduct(
           currency: 'usd',
         })
 
-        validatedData.stripePriceId = stripePrice.id
+        stripePriceId = stripePrice.id
       }
     }
 
     // Update product in database
     const product = await prisma.product.update({
       where: { id },
-      data: validatedData,
+      data: {
+        ...validatedData,
+        stripeProductId,
+        stripePriceId,
+      },
     })
 
     // Log activity
@@ -270,7 +277,7 @@ export async function updateProduct(
   } catch (error) {
     console.error('Error updating product:', error)
     if (error instanceof z.ZodError) {
-      return { success: false, error: error.errors[0].message }
+      return { success: false, error: error.issues[0].message }
     }
     return { success: false, error: 'Failed to update product' }
   }

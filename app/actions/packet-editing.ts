@@ -9,6 +9,7 @@ import { PacketStatus } from '@prisma/client';
 import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/db/prisma';
 import { AnyPacketContent, ExerciseData, NutritionData } from '@/lib/pdf/types';
+import { logAdminAction, LogResource } from '@/lib/logging';
 
 /**
  * Get packets for admin review (DRAFT and UNPUBLISHED)
@@ -488,6 +489,13 @@ export async function publishPacket(packetId: string) {
       // Don't fail the publish operation if email fails
     }
 
+    // Log activity
+    await logAdminAction('PACKET_PUBLISHED', session.user.id, LogResource.PACKET, {
+      packetId,
+      userId: existingPacket.user.id,
+      type: packet.type,
+    });
+
     revalidatePath('/admin/packets');
     revalidatePath(`/admin/packets/${packetId}`);
     revalidatePath('/dashboard');
@@ -519,6 +527,20 @@ export async function unpublishPacket(packetId: string) {
       data: {
         status: PacketStatus.UNPUBLISHED,
       },
+      include: {
+        user: {
+          select: {
+            id: true,
+          },
+        },
+      },
+    });
+
+    // Log activity
+    await logAdminAction('PACKET_UNPUBLISHED', session.user.id, LogResource.PACKET, {
+      packetId,
+      userId: packet.user.id,
+      type: packet.type,
     });
 
     revalidatePath('/admin/packets');

@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { stripe } from '@/lib/stripe';
+import { withSecurity } from '@/lib/security/api-wrapper';
+import { formRateLimiter } from '@/lib/security/rate-limit';
 
-export async function POST(request: NextRequest) {
+async function handler(request: NextRequest) {
   try {
     const body = await request.json();
     const { email, amount, allocation } = body;
@@ -42,7 +44,7 @@ export async function POST(request: NextRequest) {
 
     // Create description based on allocation
     const allocationDescription = Object.entries(allocation)
-      .filter(([_, percentage]) => percentage > 0)
+      .filter(([_, percentage]) => (percentage as number) > 0)
       .map(([area, percentage]) => `${percentage}% to ${area}`)
       .join(', ');
 
@@ -81,3 +83,7 @@ export async function POST(request: NextRequest) {
     );
   }
 }
+
+export const POST = withSecurity(handler, {
+  rateLimiter: formRateLimiter,
+});

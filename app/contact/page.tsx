@@ -3,10 +3,11 @@ import { PublicLayout } from '@/components/layouts/public-layout'
 import { ContactInfo } from '@/components/contact/contact-info'
 import { ContactForm } from '@/components/contact/contact-form'
 import { WellnessResourcesMap } from '@/components/contact/wellness-resources-map'
+import { PartnershipsSection } from '@/components/contact/partnerships-section'
 
 export const metadata: Metadata = {
   title: 'Contact Us | AFYA Wellness',
-  description: 'Get in touch with AFYA Wellness. Find our contact information, social media, and nearby wellness resources.',
+  description: 'Get in touch with AFYA Wellness. Find our contact information, social media, partnership opportunities, and nearby wellness resources.',
 }
 
 export default function ContactPage() {
@@ -31,6 +32,11 @@ export default function ContactPage() {
 
             {/* Contact Form */}
             <ContactForm />
+          </div>
+
+          {/* Partnerships Section */}
+          <div className="mb-16">
+            <PartnershipsSection />
           </div>
 
           {/* Wellness Resources Map */}

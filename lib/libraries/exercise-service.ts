@@ -24,9 +24,9 @@ export class ExerciseLibraryService {
         videoUrl: input.videoUrl,
         imageUrl: input.imageUrl,
         instructions: input.instructions,
-        regressions: input.regressions || [],
-        progressions: input.progressions || [],
-        contraindications: input.contraindications || [],
+        regressions: JSON.parse(JSON.stringify(input.regressions || [])),
+        progressions: JSON.parse(JSON.stringify(input.progressions || [])),
+        contraindications: JSON.parse(JSON.stringify(input.contraindications || [])),
         populations: input.populations,
       },
     });
@@ -67,13 +67,13 @@ export class ExerciseLibraryService {
         ...(input.imageUrl !== undefined && { imageUrl: input.imageUrl }),
         ...(input.instructions && { instructions: input.instructions }),
         ...(input.regressions !== undefined && {
-          regressions: input.regressions,
+          regressions: JSON.parse(JSON.stringify(input.regressions)),
         }),
         ...(input.progressions !== undefined && {
-          progressions: input.progressions,
+          progressions: JSON.parse(JSON.stringify(input.progressions)),
         }),
         ...(input.contraindications !== undefined && {
-          contraindications: input.contraindications,
+          contraindications: JSON.parse(JSON.stringify(input.contraindications)),
         }),
         ...(input.populations && { populations: input.populations }),
       },

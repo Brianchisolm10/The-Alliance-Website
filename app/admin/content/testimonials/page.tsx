@@ -24,7 +24,7 @@ export default async function TestimonialManagementPage() {
 
       <Suspense fallback={<LoadingSpinner />}>
         <TestimonialManagementClient 
-          initialTestimonials={result.success ? result.testimonials : []} 
+          initialTestimonials={result.success && result.testimonials ? result.testimonials : []} 
         />
       </Suspense>
     </div>

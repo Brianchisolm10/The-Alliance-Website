@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 
 export async function ProductsGrid() {
-  let products = [];
+  let products: any[] = [];
   let error = null;
 
   try {

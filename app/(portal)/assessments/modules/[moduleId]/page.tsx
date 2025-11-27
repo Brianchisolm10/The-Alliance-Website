@@ -1,7 +1,7 @@
 import { auth } from '@/lib/auth'
 import { redirect } from 'next/navigation'
 import { ModuleAssessmentClient } from './module-client'
-import { getModuleById, getModuleData } from '@/app/actions/modular-assessments'
+import { getModuleData } from '@/app/actions/modular-assessments'
 import { assessmentRegistry } from '@/lib/assessments'
 
 interface ModulePageProps {
@@ -18,23 +18,20 @@ export default async function ModulePage({ params }: ModulePageProps) {
   }
 
   try {
-    // Get module info
-    const moduleInfo = await getModuleById(params.moduleId)
-    
     // Get existing data
     const existingData = await getModuleData(params.moduleId)
 
     // Get the actual module instance for rendering
-    const module = assessmentRegistry.getModule(params.moduleId)
+    const assessmentModule = assessmentRegistry.getModule(params.moduleId)
 
-    if (!module) {
+    if (!assessmentModule) {
       redirect('/assessments/modules')
     }
 
     return (
       <div className="mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8">
         <ModuleAssessmentClient
-          module={module}
+          module={assessmentModule}
           initialData={existingData}
         />
       </div>

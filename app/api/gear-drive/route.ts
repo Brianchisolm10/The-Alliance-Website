@@ -48,8 +48,26 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    // TODO: Send confirmation email
-    // This would be implemented in the email system (task 21)
+    // Send confirmation email
+    const { sendGearDriveConfirmationEmail } = await import('@/lib/email');
+    const formattedItems = items.map((item: any) => ({
+      type: item.category,
+      description: `${item.name}${item.description ? ` - ${item.description}` : ''} (Qty: ${item.quantity})`,
+      condition,
+    }));
+
+    const emailResult = await sendGearDriveConfirmationEmail(
+      email,
+      name,
+      gearDrive.id,
+      formattedItems,
+      preference
+    );
+
+    if (!emailResult.success) {
+      console.error('Failed to send gear drive confirmation email:', emailResult.error);
+      // Don't fail the submission if email fails
+    }
 
     return NextResponse.json({
       id: gearDrive.id,

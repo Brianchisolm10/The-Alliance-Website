@@ -24,7 +24,7 @@ export default async function ImpactAreaManagementPage() {
 
       <Suspense fallback={<LoadingSpinner />}>
         <ImpactAreaManagementClient 
-          initialImpactAreas={result.success ? result.impactAreas : []} 
+          initialImpactAreas={result.success && result.impactAreas ? result.impactAreas : []} 
         />
       </Suspense>
     </div>

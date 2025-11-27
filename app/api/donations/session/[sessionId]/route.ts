@@ -3,7 +3,7 @@ import { stripe } from '@/lib/stripe';
 import { prisma } from '@/lib/db';
 
 export async function GET(
-  request: NextRequest,
+  _request: NextRequest,
   { params }: { params: { sessionId: string } }
 ) {
   try {
@@ -47,8 +47,29 @@ export async function GET(
         },
       });
 
-      // TODO: Send confirmation email with tax receipt
-      // This would be implemented in the email system (task 21)
+      // Send confirmation email with tax receipt
+      const { sendDonationReceiptEmail } = await import('@/lib/email');
+      const donorName = session.customer_details?.name || 'Donor';
+      
+      const emailResult = await sendDonationReceiptEmail(
+        donation.email,
+        donorName,
+        donation.id,
+        donation.amount,
+        allocation,
+        donation.createdAt
+      );
+
+      if (emailResult.success) {
+        // Mark receipt as sent
+        await prisma.donation.update({
+          where: { id: donation.id },
+          data: { receiptSent: true },
+        });
+      } else {
+        console.error('Failed to send donation receipt email:', emailResult.error);
+        // Don't fail the donation if email fails
+      }
     }
 
     return NextResponse.json({

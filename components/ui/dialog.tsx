@@ -13,6 +13,8 @@ interface DialogContentProps extends React.HTMLAttributes<HTMLDivElement> {
 }
 
 const Dialog: React.FC<DialogProps> = ({ open, onOpenChange, children }) => {
+  const dialogRef = React.useRef<HTMLDivElement>(null)
+
   React.useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === 'Escape' && open) {
@@ -23,6 +25,40 @@ const Dialog: React.FC<DialogProps> = ({ open, onOpenChange, children }) => {
     if (open) {
       document.addEventListener('keydown', handleEscape)
       document.body.style.overflow = 'hidden'
+
+      // Focus trap
+      const dialog = dialogRef.current
+      if (dialog) {
+        const focusableElements = dialog.querySelectorAll<HTMLElement>(
+          'a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])'
+        )
+        const firstElement = focusableElements[0]
+        const lastElement = focusableElements[focusableElements.length - 1]
+
+        // Focus first element
+        firstElement?.focus()
+
+        const handleTab = (e: KeyboardEvent) => {
+          if (e.key !== 'Tab') return
+
+          if (e.shiftKey) {
+            if (document.activeElement === firstElement) {
+              lastElement?.focus()
+              e.preventDefault()
+            }
+          } else {
+            if (document.activeElement === lastElement) {
+              firstElement?.focus()
+              e.preventDefault()
+            }
+          }
+        }
+
+        dialog.addEventListener('keydown', handleTab)
+        return () => {
+          dialog.removeEventListener('keydown', handleTab)
+        }
+      }
     }
 
     return () => {
@@ -42,18 +78,23 @@ const Dialog: React.FC<DialogProps> = ({ open, onOpenChange, children }) => {
         aria-hidden="true"
       />
       {/* Content wrapper */}
-      <div className="relative z-50">{children}</div>
+      <div className="relative z-50" ref={dialogRef}>{children}</div>
     </div>
   )
 }
 
 const DialogContent = React.forwardRef<HTMLDivElement, DialogContentProps>(
   ({ className = '', children, ...props }, ref) => {
+    const titleId = 'dialog-title'
+    const descriptionId = 'dialog-description'
+    
     return (
       <div
         ref={ref}
         role="dialog"
         aria-modal="true"
+        aria-labelledby={titleId}
+        aria-describedby={descriptionId}
         className={`relative w-full max-w-lg rounded-lg bg-white p-6 shadow-lg ${className}`}
         onClick={(e) => e.stopPropagation()}
         {...props}
@@ -74,6 +115,7 @@ const DialogTitle = React.forwardRef<HTMLHeadingElement, React.HTMLAttributes<HT
   ({ className = '', ...props }, ref) => (
     <h2
       ref={ref}
+      id="dialog-title"
       className={`text-lg font-semibold leading-none tracking-tight ${className}`}
       {...props}
     />
@@ -85,7 +127,7 @@ const DialogDescription = React.forwardRef<
   HTMLParagraphElement,
   React.HTMLAttributes<HTMLParagraphElement>
 >(({ className = '', ...props }, ref) => (
-  <p ref={ref} className={`text-sm text-gray-500 ${className}`} {...props} />
+  <p ref={ref} id="dialog-description" className={`text-sm text-gray-500 ${className}`} {...props} />
 ))
 DialogDescription.displayName = 'DialogDescription'
 

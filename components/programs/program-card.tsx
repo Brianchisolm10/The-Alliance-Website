@@ -40,19 +40,22 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({ program }) => {
   const typeLabel = typeLabels[program.type] || program.type
 
   return (
-    <Card className="flex flex-col h-full hover:shadow-lg transition-shadow">
+    <Card className="flex flex-col h-full hover:shadow-lg transition-shadow" role="article" aria-label={`${program.name} program`}>
       {program.imageUrl ? (
         <div className="relative h-48 w-full overflow-hidden rounded-t-lg bg-gray-200">
           <Image
             src={program.imageUrl}
-            alt={program.name}
+            alt={`${program.name} program image`}
             fill
             className="object-cover"
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+            loading="lazy"
+            quality={85}
           />
         </div>
       ) : (
-        <div className="relative h-48 w-full overflow-hidden rounded-t-lg bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
-          <svg className="h-16 w-16 text-white opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div className="relative h-48 w-full overflow-hidden rounded-t-lg bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center" aria-hidden="true">
+          <svg className="h-16 w-16 text-white opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
           </svg>
         </div>
@@ -69,16 +72,16 @@ export const ProgramCard: React.FC<ProgramCardProps> = ({ program }) => {
       <CardContent className="flex-grow">
         <div className="flex items-center gap-4 text-sm text-gray-600">
           <div className="flex items-center gap-1">
-            <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
-            <span>{program.duration}</span>
+            <span aria-label={`Duration: ${program.duration}`}>{program.duration}</span>
           </div>
           <div className="flex items-center gap-1">
-            <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
             </svg>
-            <span>{typeLabel}</span>
+            <span aria-label={`Type: ${typeLabel}`}>{typeLabel}</span>
           </div>
         </div>
       </CardContent>

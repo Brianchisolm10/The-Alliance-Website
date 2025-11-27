@@ -2,15 +2,16 @@ import { PublicLayout } from '@/components/layouts/public-layout'
 import { ProgramsGrid } from '@/components/programs/programs-grid'
 import { ProgramFilters } from '@/components/programs/program-filters'
 import { MobileFilters } from '@/components/programs/mobile-filters'
-import { programQueries } from '@/lib/db/queries'
+import { cachedProgramQueries } from '@/lib/db/cached-queries'
 
-export const dynamic = 'force-dynamic'
+// Revalidate this page every 10 minutes
+export const revalidate = 600
 
 export default async function ProgramsPage() {
   let programs: any[] = []
   
   try {
-    programs = await programQueries.findPublished()
+    programs = await cachedProgramQueries.findPublished()
   } catch (error) {
     console.error('Error fetching programs:', error)
   }

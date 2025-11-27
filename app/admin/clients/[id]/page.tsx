@@ -42,6 +42,7 @@ interface ClientData {
     id: string
     content: string
     createdAt: Date
+    updatedAt: Date
     author: {
       id: string
       name: string | null

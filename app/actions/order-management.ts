@@ -5,6 +5,7 @@ import { auth } from '@/lib/auth'
 import { OrderStatus } from '@prisma/client'
 import { revalidatePath } from 'next/cache'
 import { sendOrderStatusEmail } from '@/lib/email'
+import { logTransaction } from '@/lib/logging'
 
 export async function getOrders(filters?: {
   status?: OrderStatus
@@ -157,17 +158,10 @@ export async function updateOrderStatus(id: string, status: OrderStatus) {
     })
 
     // Log activity
-    await prisma.activityLog.create({
-      data: {
-        userId: session.user.id,
-        action: 'ORDER_STATUS_UPDATED',
-        resource: 'Order',
-        details: {
-          orderId: order.id,
-          newStatus: status,
-          customerEmail: order.email,
-        },
-      },
+    await logTransaction('ORDER_UPDATED', session.user.id, {
+      orderId: order.id,
+      newStatus: status,
+      customerEmail: order.email,
     })
 
     // Send status update email

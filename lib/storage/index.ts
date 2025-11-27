@@ -90,9 +90,9 @@ async function deleteFromVercelBlob(fileUrl: string): Promise<void> {
  * Upload to AWS S3
  */
 async function uploadToS3(
-  buffer: Buffer,
-  filename: string,
-  contentType: string
+  _buffer: Buffer,
+  _filename: string,
+  _contentType: string
 ): Promise<string> {
   // Check if AWS credentials are configured
   if (

@@ -157,6 +157,9 @@ export default function CheckoutPage() {
                           alt={item.name}
                           fill
                           className="object-cover"
+                          sizes="64px"
+                          loading="lazy"
+                          quality={85}
                         />
                       ) : (
                         <div className="flex items-center justify-center h-full">

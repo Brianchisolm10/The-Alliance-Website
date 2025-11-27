@@ -44,7 +44,7 @@ export async function generateAndUploadPacketPDF(
     }
 
     // Generate PDF buffer
-    const content = packet.data as AnyPacketContent;
+    const content = JSON.parse(JSON.stringify(packet.data)) as AnyPacketContent;
     const pdfBuffer = await generatePDFBuffer(content);
 
     // Generate filename

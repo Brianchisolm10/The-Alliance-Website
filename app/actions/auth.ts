@@ -13,12 +13,14 @@ import {
   setupAccountSchema,
   type SetupAccountFormData,
 } from '@/lib/validations/auth'
+import { logAuth } from '@/lib/logging'
 
 export async function login(data: LoginFormData) {
   try {
     const validatedFields = loginSchema.safeParse(data)
 
     if (!validatedFields.success) {
+      console.error('Validation failed:', validatedFields.error)
       return {
         error: 'Invalid fields',
         fieldErrors: validatedFields.error.flatten().fieldErrors,
@@ -26,12 +28,15 @@ export async function login(data: LoginFormData) {
     }
 
     const { email, password } = validatedFields.data
+    console.log('Attempting sign in for:', email.toLowerCase())
 
-    await signIn('credentials', {
+    const result = await signIn('credentials', {
       email: email.toLowerCase(),
       password,
       redirect: false,
     })
+
+    console.log('Sign in result:', result)
 
     // Log activity
     const user = await prisma.user.findUnique({
@@ -39,18 +44,21 @@ export async function login(data: LoginFormData) {
     })
 
     if (user) {
-      await prisma.activityLog.create({
-        data: {
-          userId: user.id,
-          action: 'LOGIN',
-          resource: 'AUTH',
-          details: { email },
-        },
+      console.log('User found, logging activity')
+      await logAuth('LOGIN', user.id, { email })
+      
+      // Update last login timestamp
+      await prisma.user.update({
+        where: { id: user.id },
+        data: { lastLoginAt: new Date() },
       })
+    } else {
+      console.log('User not found after sign in')
     }
 
     return { success: true }
   } catch (error) {
+    console.error('Login error:', error)
     if (error instanceof AuthError) {
       switch (error.type) {
         case 'CredentialsSignin':
@@ -110,14 +118,7 @@ export async function requestPasswordReset(data: ResetRequestFormData) {
     console.log(`Reset URL: ${process.env.NEXT_PUBLIC_APP_URL}/reset-password/${resetToken}`)
 
     // Log activity
-    await prisma.activityLog.create({
-      data: {
-        userId: user.id,
-        action: 'PASSWORD_RESET_REQUEST',
-        resource: 'AUTH',
-        details: { email },
-      },
-    })
+    await logAuth('PASSWORD_RESET_REQUEST', user.id, { email })
 
     return { success: true }
   } catch (error) {
@@ -168,14 +169,7 @@ export async function resetPassword(data: ResetPasswordFormData) {
     })
 
     // Log activity
-    await prisma.activityLog.create({
-      data: {
-        userId: user.id,
-        action: 'PASSWORD_RESET_COMPLETE',
-        resource: 'AUTH',
-        details: { email: user.email },
-      },
-    })
+    await logAuth('PASSWORD_RESET_COMPLETE', user.id, { email: user.email })
 
     return { success: true }
   } catch (error) {
@@ -229,14 +223,7 @@ export async function setupAccount(data: SetupAccountFormData) {
     })
 
     // Log activity
-    await prisma.activityLog.create({
-      data: {
-        userId: user.id,
-        action: 'ACCOUNT_SETUP_COMPLETE',
-        resource: 'AUTH',
-        details: { email: user.email },
-      },
-    })
+    await logAuth('ACCOUNT_SETUP_COMPLETE', user.id, { email: user.email })
 
     return { success: true }
   } catch (error) {

@@ -4,7 +4,6 @@
  */
 
 import { prisma } from '@/lib/db/prisma'
-import { Population } from '@prisma/client'
 import { UnifiedClientProfile } from './types'
 import { assessmentRegistry } from './registry'
 
@@ -16,13 +15,13 @@ export async function saveModuleToProfile(
   moduleId: string,
   formData: Record<string, any>
 ): Promise<void> {
-  const module = assessmentRegistry.getModule(moduleId)
-  if (!module) {
+  const assessmentModule = assessmentRegistry.getModule(moduleId)
+  if (!assessmentModule) {
     throw new Error(`Module ${moduleId} not found`)
   }
 
   // Extract profile data from form data
-  const profileData = module.extractProfileData(formData)
+  const profileData = assessmentModule.extractProfileData(formData)
 
   // Get existing profile or create new one
   const existingProfile = await getUnifiedProfile(userId)
@@ -41,11 +40,11 @@ export async function saveModuleToProfile(
     create: {
       userId,
       type: 'GENERAL',
-      data: updatedProfile,
+      data: JSON.parse(JSON.stringify(updatedProfile)),
       completed: false,
     },
     update: {
-      data: updatedProfile,
+      data: JSON.parse(JSON.stringify(updatedProfile)),
       updatedAt: new Date(),
     },
   })
@@ -89,11 +88,11 @@ export async function updateUnifiedProfile(
     create: {
       userId,
       type: 'GENERAL',
-      data: updatedProfile,
+      data: JSON.parse(JSON.stringify(updatedProfile)),
       completed: false,
     },
     update: {
-      data: updatedProfile,
+      data: JSON.parse(JSON.stringify(updatedProfile)),
       updatedAt: new Date(),
     },
   })

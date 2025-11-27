@@ -39,6 +39,12 @@ export interface AssessmentModule {
   priority: number // Lower number = higher priority in display order
   required: boolean
   category: 'core' | 'population' | 'lifestyle' | 'medical' | 'equipment'
+  
+  // Methods
+  isApplicable(population: Population): boolean
+  getActiveSections(data: Record<string, any>): AssessmentSection[]
+  validate(data: Record<string, any>): { valid: boolean; errors: Record<string, string> }
+  extractProfileData(formData: Record<string, any>): Partial<UnifiedClientProfile>
 }
 
 export interface UnifiedClientProfile {

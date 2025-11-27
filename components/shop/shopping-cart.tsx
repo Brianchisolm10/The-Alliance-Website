@@ -40,6 +40,9 @@ export function ShoppingCart() {
                   alt={item.name}
                   fill
                   className="object-cover"
+                  sizes="96px"
+                  loading="lazy"
+                  quality={85}
                 />
               ) : (
                 <div className="flex items-center justify-center h-full">

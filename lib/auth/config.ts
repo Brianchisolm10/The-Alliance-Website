@@ -10,6 +10,37 @@ const credentialsSchema = z.object({
   password: z.string().min(1),
 })
 
+// Simple in-memory rate limiter for auth attempts
+const authAttempts = new Map<string, { count: number; resetTime: number }>()
+
+function checkAuthRateLimit(email: string): boolean {
+  const now = Date.now()
+  const record = authAttempts.get(email)
+  
+  if (!record || record.resetTime < now) {
+    authAttempts.set(email, { count: 1, resetTime: now + 15 * 60 * 1000 })
+    return true
+  }
+  
+  if (record.count >= 5) {
+    return false
+  }
+  
+  record.count++
+  authAttempts.set(email, record)
+  return true
+}
+
+// Clean up expired entries
+setInterval(() => {
+  const now = Date.now()
+  for (const [key, value] of authAttempts.entries()) {
+    if (value.resetTime < now) {
+      authAttempts.delete(key)
+    }
+  }
+}, 60000)
+
 export const authConfig: NextAuthConfig = {
   providers: [
     Credentials({
@@ -26,6 +57,11 @@ export const authConfig: NextAuthConfig = {
         }
 
         const { email, password } = validatedFields.data
+
+        // Check rate limit
+        if (!checkAuthRateLimit(email.toLowerCase())) {
+          throw new Error('Too many login attempts. Please try again later.')
+        }
 
         // Find user by email
         const user = await prisma.user.findUnique({
@@ -87,6 +123,21 @@ export const authConfig: NextAuthConfig = {
   session: {
     strategy: 'jwt',
     maxAge: 30 * 60, // 30 minutes
+    updateAge: 5 * 60, // Update session every 5 minutes
+  },
+  jwt: {
+    maxAge: 30 * 60, // 30 minutes
+  },
+  cookies: {
+    sessionToken: {
+      name: `${process.env.NODE_ENV === 'production' ? '__Secure-' : ''}next-auth.session-token`,
+      options: {
+        httpOnly: true,
+        sameSite: 'lax',
+        path: '/',
+        secure: process.env.NODE_ENV === 'production',
+      },
+    },
   },
   secret: process.env.NEXTAUTH_SECRET,
 }

@@ -4,6 +4,7 @@ import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/db/prisma'
 import { revalidatePath } from 'next/cache'
 import { AssessmentType } from '@prisma/client'
+import { logFormSubmission } from '@/lib/logging'
 
 export async function saveAssessment(
   type: AssessmentType,
@@ -48,14 +49,9 @@ export async function saveAssessment(
     }
 
     // Log activity
-    await prisma.activityLog.create({
-      data: {
-        userId: session.user.id,
-        action: completed ? 'COMPLETE_ASSESSMENT' : 'SAVE_ASSESSMENT',
-        resource: 'ASSESSMENT',
-        details: { type, completed },
-      },
-    })
+    if (completed) {
+      await logFormSubmission('ASSESSMENT_SUBMIT', session.user.id, { type })
+    }
 
     revalidatePath('/assessments')
     revalidatePath('/dashboard')

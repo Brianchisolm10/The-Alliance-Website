@@ -2,6 +2,8 @@
 
 import { prisma } from '@/lib/db'
 import { z } from 'zod'
+import { logFormSubmission } from '@/lib/logging'
+import { sendContactFormNotification, sendContactFormConfirmation } from '@/lib/email'
 
 const contactSchema = z.object({
   name: z.string().min(1, 'Name is required'),
@@ -20,7 +22,7 @@ export async function submitContactForm(data: {
     const validatedData = contactSchema.parse(data)
 
     // Save to database
-    await prisma.contactSubmission.create({
+    const submission = await prisma.contactSubmission.create({
       data: {
         name: validatedData.name,
         email: validatedData.email,
@@ -29,8 +31,28 @@ export async function submitContactForm(data: {
       },
     })
 
-    // TODO: Send notification email to admin
-    console.log('Contact form submitted:', validatedData)
+    // Log activity
+    await logFormSubmission('CONTACT_FORM_SUBMIT', null, {
+      submissionId: submission.id,
+      email: validatedData.email,
+      subject: validatedData.subject,
+    })
+
+    // Send notification email to admin (afya@theafya.org)
+    await sendContactFormNotification(
+      validatedData.name,
+      validatedData.email,
+      validatedData.subject,
+      validatedData.message,
+      submission.id
+    )
+
+    // Send confirmation email to submitter
+    await sendContactFormConfirmation(
+      validatedData.name,
+      validatedData.email,
+      validatedData.subject
+    )
 
     return { success: true }
   } catch (error) {

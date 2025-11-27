@@ -72,6 +72,9 @@ export const TestimonialsCarousel: React.FC<TestimonialsCarouselProps> = ({ test
                       alt={currentTestimonial.name}
                       fill
                       className="object-cover"
+                      sizes="80px"
+                      loading="lazy"
+                      quality={85}
                     />
                   </div>
                 )}

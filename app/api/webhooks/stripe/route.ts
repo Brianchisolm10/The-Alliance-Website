@@ -139,6 +139,47 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
     });
   }
 
-  // TODO: Send order confirmation email
+  // Send order confirmation email
+  const { sendOrderConfirmationEmail } = await import('@/lib/email');
+  
+  // Get order with items for email
+  const orderWithItems = await prisma.order.findUnique({
+    where: { id: order.id },
+    include: {
+      orderItems: {
+        include: {
+          product: {
+            select: {
+              name: true,
+            },
+          },
+        },
+      },
+    },
+  });
+
+  if (orderWithItems) {
+    const customerName = session.customer_details?.name || user?.name || 'Customer';
+    const orderItems = orderWithItems.orderItems.map((item) => ({
+      name: item.product.name,
+      quantity: item.quantity,
+      price: item.price,
+    }));
+
+    const emailResult = await sendOrderConfirmationEmail(
+      customer_email,
+      customerName,
+      order.id,
+      amount_total - (donationAmount || 0), // Subtract donation from total
+      orderItems,
+      donationAmount || undefined
+    );
+
+    if (!emailResult.success) {
+      console.error('Failed to send order confirmation email:', emailResult.error);
+      // Don't fail the order if email fails
+    }
+  }
+
   console.log(`Order created: ${order.id} for ${customer_email}`);
 }

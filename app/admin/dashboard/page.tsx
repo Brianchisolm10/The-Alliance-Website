@@ -1,11 +1,16 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import dynamic from 'next/dynamic'
 import Link from 'next/link'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { NotificationsCenter } from '@/components/admin/notifications-center'
 import { getAdminDashboardData, getSystemHealth, getNotifications } from '@/app/actions/admin-dashboard'
+
+// Lazy load NotificationsCenter as it's below the fold
+const NotificationsCenter = dynamic(() => import('@/components/admin/notifications-center').then(mod => ({ default: mod.NotificationsCenter })), {
+  loading: () => <Card className="p-6 min-h-[200px] animate-pulse bg-gray-100" />,
+})
 
 interface DashboardData {
   kpis: {

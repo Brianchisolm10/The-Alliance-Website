@@ -3,7 +3,6 @@
 import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/db/prisma'
 import { revalidatePath } from 'next/cache'
-import { Population } from '@prisma/client'
 import {
   assessmentRegistry,
   saveModuleToProfile,
@@ -74,9 +73,9 @@ export async function getModuleById(moduleId: string) {
   }
 
   try {
-    const module = assessmentRegistry.getModule(moduleId)
+    const assessmentModule = assessmentRegistry.getModule(moduleId)
 
-    if (!module) {
+    if (!assessmentModule) {
       throw new Error('Module not found')
     }
 
@@ -86,17 +85,17 @@ export async function getModuleById(moduleId: string) {
       select: { population: true },
     })
 
-    if (!user?.population || !module.isApplicable(user.population)) {
+    if (!user?.population || !assessmentModule.isApplicable(user.population)) {
       throw new Error('Module not available for your population')
     }
 
     return {
-      id: module.id,
-      name: module.name,
-      description: module.description,
-      sections: module.sections,
-      required: module.required,
-      category: module.category,
+      id: assessmentModule.id,
+      name: assessmentModule.name,
+      description: assessmentModule.description,
+      sections: assessmentModule.sections,
+      required: assessmentModule.required,
+      category: assessmentModule.category,
     }
   } catch (error) {
     console.error('Error fetching module:', error)
@@ -123,8 +122,8 @@ export async function saveModuleData(
     await saveModuleToProfile(session.user.id, moduleId, formData)
 
     // Also save raw form data to a module-specific assessment record
-    const module = assessmentRegistry.getModule(moduleId)
-    if (!module) {
+    const assessmentModule = assessmentRegistry.getModule(moduleId)
+    if (!assessmentModule) {
       throw new Error('Module not found')
     }
 

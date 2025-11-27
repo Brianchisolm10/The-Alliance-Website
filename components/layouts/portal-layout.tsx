@@ -71,6 +71,7 @@ const navigation = [
 export const PortalLayout: React.FC<PortalLayoutProps> = ({ children, userName }) => {
   const [sidebarOpen, setSidebarOpen] = React.useState(false)
   const pathname = usePathname()
+  const sidebarRef = React.useRef<HTMLDivElement>(null)
 
   const isActive = (href: string) => {
     if (href === '/dashboard') {
@@ -78,6 +79,23 @@ export const PortalLayout: React.FC<PortalLayoutProps> = ({ children, userName }
     }
     return pathname.startsWith(href)
   }
+
+  // Close sidebar on Escape key
+  React.useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && sidebarOpen) {
+        setSidebarOpen(false)
+      }
+    }
+
+    if (sidebarOpen) {
+      document.addEventListener('keydown', handleEscape)
+    }
+
+    return () => {
+      document.removeEventListener('keydown', handleEscape)
+    }
+  }, [sidebarOpen])
 
   return (
     <div className="flex h-screen bg-gray-100">
@@ -91,9 +109,12 @@ export const PortalLayout: React.FC<PortalLayoutProps> = ({ children, userName }
 
       {/* Sidebar */}
       <aside
+        ref={sidebarRef}
         className={`fixed inset-y-0 left-0 z-50 w-64 transform bg-white shadow-lg transition-transform duration-300 ease-in-out lg:static lg:translate-x-0 ${
           sidebarOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
+        aria-label="Main navigation"
+        aria-hidden={!sidebarOpen && 'true'}
       >
         <div className="flex h-full flex-col">
           {/* Logo */}
@@ -103,18 +124,18 @@ export const PortalLayout: React.FC<PortalLayoutProps> = ({ children, userName }
             </Link>
             <button
               type="button"
-              className="lg:hidden"
+              className="lg:hidden focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 rounded p-2"
               onClick={() => setSidebarOpen(false)}
-              aria-label="Close sidebar"
+              aria-label="Close navigation menu"
             >
-              <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
           </div>
 
           {/* Navigation */}
-          <nav className="flex-1 space-y-1 px-3 py-4">
+          <nav id="sidebar-navigation" className="flex-1 space-y-1 px-3 py-4" aria-label="Portal navigation">
             {navigation.map((item) => (
               <Link
                 key={item.name}
@@ -125,8 +146,9 @@ export const PortalLayout: React.FC<PortalLayoutProps> = ({ children, userName }
                     : 'text-gray-700 hover:bg-gray-50 hover:text-blue-600'
                 }`}
                 onClick={() => setSidebarOpen(false)}
+                aria-current={isActive(item.href) ? 'page' : undefined}
               >
-                {item.icon}
+                <span aria-hidden="true">{item.icon}</span>
                 {item.name}
               </Link>
             ))}
@@ -152,14 +174,16 @@ export const PortalLayout: React.FC<PortalLayoutProps> = ({ children, userName }
       {/* Main content */}
       <div className="flex flex-1 flex-col overflow-hidden">
         {/* Top bar */}
-        <header className="flex h-16 items-center justify-between bg-white px-4 shadow-sm lg:px-6">
+        <header className="flex h-16 items-center justify-between bg-white px-4 shadow-sm lg:px-6" role="banner">
           <button
             type="button"
-            className="lg:hidden"
+            className="lg:hidden focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 rounded p-2"
             onClick={() => setSidebarOpen(true)}
-            aria-label="Open sidebar"
+            aria-label="Open navigation menu"
+            aria-expanded={sidebarOpen}
+            aria-controls="sidebar-navigation"
           >
-            <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -172,7 +196,7 @@ export const PortalLayout: React.FC<PortalLayoutProps> = ({ children, userName }
         </header>
 
         {/* Page content */}
-        <main className="flex-1 overflow-y-auto p-4 lg:p-6">{children}</main>
+        <main className="flex-1 overflow-y-auto p-4 lg:p-6" role="main">{children}</main>
       </div>
     </div>
   )

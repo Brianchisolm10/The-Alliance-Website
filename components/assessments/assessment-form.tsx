@@ -3,23 +3,9 @@
 import * as React from 'react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
+import type { AssessmentSection, AssessmentQuestion } from '@/lib/assessments/types'
 
-export interface AssessmentQuestion {
-  id: string
-  question: string
-  type: 'text' | 'textarea' | 'select' | 'radio' | 'checkbox' | 'number'
-  options?: string[]
-  required?: boolean
-  placeholder?: string
-  condition?: (data: Record<string, any>) => boolean
-}
-
-export interface AssessmentSection {
-  id: string
-  title: string
-  description?: string
-  questions: AssessmentQuestion[]
-}
+export type { AssessmentSection, AssessmentQuestion }
 
 interface AssessmentFormProps {
   sections: AssessmentSection[]
